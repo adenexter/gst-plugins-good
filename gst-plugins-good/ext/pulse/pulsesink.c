@@ -2032,11 +2032,20 @@ gst_pulsesink_create_probe_stream (GstPulseSink * psink,
   pa_format_info *formats[1] = { format };
   pa_stream *stream;
   pa_stream_flags_t flags;
+  pa_proplist *probe_proplist = NULL;
 
   GST_LOG_OBJECT (psink, "Creating probe stream");
 
+  /* Set separate media.role property for probe stream, so that it can
+   * be distinguished more easily from the actual playback stream. */
+  if (psink->proplist)
+    probe_proplist = pa_proplist_copy(psink->proplist);
+  else
+    probe_proplist = pa_proplist_new();
+  pa_proplist_sets(probe_proplist, PA_PROP_MEDIA_ROLE, "format-probe");
+
   if (!(stream = pa_stream_new_extended (pbuf->context, "pulsesink probe",
-              formats, 1, psink->proplist)))
+              formats, 1, probe_proplist)))
     goto error;
 
   /* construct the flags */
@@ -2052,9 +2061,13 @@ gst_pulsesink_create_probe_stream (GstPulseSink * psink,
   if (!gst_pulsering_wait_for_stream_ready (psink, stream))
     goto error;
 
+  pa_proplist_free(probe_proplist);
+
   return stream;
 
 error:
+  pa_proplist_free(probe_proplist);
+
   if (stream)
     pa_stream_unref (stream);
   return NULL;
