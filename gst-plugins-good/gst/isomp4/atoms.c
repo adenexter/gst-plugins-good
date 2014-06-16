@@ -3428,6 +3428,45 @@ atom_trak_set_subtitle_commons (AtomTRAK * trak, AtomsContext * context)
 }
 
 void
+atom_trak_set_video_transform (AtomTRAK * trak, gint orientation)
+{
+    switch (orientation) {
+    case 90:
+        trak->tkhd.matrix[0] = 0;
+        trak->tkhd.matrix[1] = (1 << 16);
+        trak->tkhd.matrix[3] = -(1 << 16);
+        trak->tkhd.matrix[4] = 0;
+        trak->tkhd.matrix[6] = trak->tkhd.height;
+        trak->tkhd.matrix[7] = 0;
+        break;
+    case 180:
+        trak->tkhd.matrix[0] = -(1 << 16);
+        trak->tkhd.matrix[1] = 0;
+        trak->tkhd.matrix[3] = 0;
+        trak->tkhd.matrix[4] = -(1 << 16);
+        trak->tkhd.matrix[6] = trak->tkhd.width;
+        trak->tkhd.matrix[7] = trak->tkhd.height;
+        break;
+    case 270:
+        trak->tkhd.matrix[0] = 0;
+        trak->tkhd.matrix[1] = -(1 << 16);
+        trak->tkhd.matrix[3] = (1 << 16);
+        trak->tkhd.matrix[4] = 0;
+        trak->tkhd.matrix[6] = 0;
+        trak->tkhd.matrix[7] = trak->tkhd.width;
+        break;
+    default:
+        trak->tkhd.matrix[0] = (1 << 16);
+        trak->tkhd.matrix[1] = 0;
+        trak->tkhd.matrix[3] = 0;
+        trak->tkhd.matrix[4] = (1 << 16);
+        trak->tkhd.matrix[6] = 0;
+        trak->tkhd.matrix[7] = 0;
+        break;
+    }
+}
+
+void
 atom_trak_set_audio_type (AtomTRAK * trak, AtomsContext * context,
     AudioSampleEntry * entry, guint32 scale, AtomInfo * ext, gint sample_size)
 {

@@ -938,6 +938,8 @@ void atom_trak_set_subtitle_type (AtomTRAK * trak, AtomsContext * context,
 void atom_trak_update_bitrates (AtomTRAK * trak, guint32 avg_bitrate,
                                 guint32 max_bitrate);
 
+void atom_trak_set_video_transform (AtomTRAK * trak, gint orientation);
+
 void atom_trak_tx3g_update_dimension (AtomTRAK * trak, guint32 width,
                                       guint32 height);
 

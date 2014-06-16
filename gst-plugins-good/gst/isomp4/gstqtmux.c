@@ -379,6 +379,7 @@ gst_qt_mux_pad_reset (GstQTPad * qtpad)
   qtpad->total_duration = 0;
   qtpad->total_bytes = 0;
   qtpad->sparse = FALSE;
+  qtpad->orientation = 0;
 
   qtpad->buf_head = 0;
   qtpad->buf_tail = 0;
@@ -1910,6 +1911,8 @@ gst_qt_mux_stop_file (GstQTMux * qtmux)
 
       atom_trak_update_bitrates (qtpad->trak, avgbitrate, maxbitrate);
     }
+
+    atom_trak_set_video_transform (qtpad->trak, qtpad->orientation);
   }
 
   /* need to update values on subtitle traks now that we know the
@@ -3366,6 +3369,7 @@ gst_qt_mux_sink_event (GstCollectPads * pads, GstCollectData * data,
       GstTagSetter *setter = GST_TAG_SETTER (qtmux);
       GstTagMergeMode mode;
       gchar *code;
+      gchar *image_orientation;
 
       GST_OBJECT_LOCK (qtmux);
       mode = gst_tag_setter_get_tag_merge_mode (setter);
@@ -3386,6 +3390,24 @@ gst_qt_mux_sink_event (GstCollectPads * pads, GstCollectData * data,
           qtpad->avg_bitrate = avg_bitrate;
         if (max_bitrate > 0 && max_bitrate < G_MAXUINT32)
           qtpad->max_bitrate = max_bitrate;
+      }
+
+      if (gst_tag_list_get_string (list, GST_TAG_IMAGE_ORIENTATION,
+          &image_orientation)) {
+        GstQTPad *qtpad = gst_pad_get_element_private (pad);
+
+        GST_DEBUG_OBJECT (qtmux, "image rotation is %s", image_orientation);
+
+        if (strcmp(image_orientation, "rotate-90") == 0) {
+          qtpad->orientation = 90;
+        } else if (strcmp(image_orientation, "rotate-180") == 0) {
+          qtpad->orientation = 180;
+        } else if (strcmp(image_orientation, "rotate-270") == 0) {
+          qtpad->orientation = 270;
+        } else {
+          qtpad->orientation = 0;
+        }
+        g_free(image_orientation);
       }
 
       if (gst_tag_list_get_string (list, GST_TAG_LANGUAGE_CODE, &code)) {

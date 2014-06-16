@@ -100,6 +100,7 @@ struct _GstQTPad
   gboolean sparse;
   /* bitrates */
   guint32 avg_bitrate, max_bitrate;
+  gint orientation;
 
   /* for avg bitrate calculation */
   guint64 total_bytes;
